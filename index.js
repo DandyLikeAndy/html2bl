@@ -30,11 +30,11 @@ function getClasses(html) {
  * Returns file names from CSS classes with redifinition levels on fs.
  * @param {string[]} blocks
  * @param {string[]} levels
- * @param {string} ext  Extension of the preprocessing CSS file
+ * @param {string} extCssFiles  Extension of the preprocessing CSS file
  * @returns {string[]}
  */
-function getFilesFromBlocks(blocks, levels, ext) {
-    if (!ext) ext = 'css';
+function getFilesFromBlocks(blocks, levels, extCssFiles) {
+    if (!extCssFiles) extCssFiles = 'css';
     
     var extFiles = [],
         blockDirs = [];
@@ -45,7 +45,7 @@ function getFilesFromBlocks(blocks, levels, ext) {
             return stat(dirName).then(function (stats) {
                 if (stats.isDirectory()) {
                     blockDirs.push(dirName);
-                    var fileName = path.resolve(dirName + '/' + blockName + '.'+ ext);
+                    var fileName = path.resolve(dirName + '/' + blockName + '.'+ extCssFiles);
                 }
                 if (fs.statSync(fileName).isFile()) {
                     extFiles.push(fileName);
@@ -54,7 +54,7 @@ function getFilesFromBlocks(blocks, levels, ext) {
             });
         }));
     })).then(function() {
-        return { [ext]: extFiles, dirs: blockDirs };
+        return { [extCssFiles]: extFiles, dirs: blockDirs };
     });
 }
 
@@ -64,14 +64,14 @@ function getFilesFromBlocks(blocks, levels, ext) {
  * @param {Object} params
  * @param {string} params.htmlSrc html file name for parsing
  * @param {(string|string[])} params.levels — redefinition levels
- * @param {string} params.ext ext - extension of the preprocessing CSS file
+ * @param {string} params.extCssFiles extension of the preprocessing CSS file
  *
  */
 exports.getFileNames = function(params) {
     var htmlSrc = fs.readFileSync(params.htmlSrc, 'utf8'),
         blocks = getClasses(htmlSrc);
 
-    return getFilesFromBlocks(blocks, params.levels, params.ext).then(function(files) {
+    return getFilesFromBlocks(blocks, params.levels, params.extCssFiles).then(function(files) {
         return files;
     });
 };
