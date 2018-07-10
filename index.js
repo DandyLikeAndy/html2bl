@@ -30,10 +30,13 @@ function getClasses(html) {
  * Returns file names from CSS classes with redifinition levels on fs.
  * @param {string[]} blocks
  * @param {string[]} levels
+ * @param {string} ext  Extension of the preprocessing CSS file
  * @returns {string[]}
  */
-function getFilesFromBlocks(blocks, levels) {
-    var cssFiles = [],
+function getFilesFromBlocks(blocks, levels, ext) {
+    if (!ext) ext = 'css';
+    
+    var extFiles = [],
         blockDirs = [];
 
     return vow.all(levels.map(function(level) {
@@ -42,16 +45,16 @@ function getFilesFromBlocks(blocks, levels) {
             return stat(dirName).then(function (stats) {
                 if (stats.isDirectory()) {
                     blockDirs.push(dirName);
-                    var fileName = path.resolve(dirName + '/' + blockName + '.css');
+                    var fileName = path.resolve(dirName + '/' + blockName + '.'+ ext);
                 }
                 if (fs.statSync(fileName).isFile()) {
-                    cssFiles.push(fileName);
+                    extFiles.push(fileName);
                 }
                 return stats;
             });
         }));
     })).then(function() {
-        return { css: cssFiles, dirs: blockDirs };
+        return { [ext]: extFiles, dirs: blockDirs };
     });
 }
 
@@ -61,13 +64,14 @@ function getFilesFromBlocks(blocks, levels) {
  * @param {Object} params
  * @param {string} params.htmlSrc html file name for parsing
  * @param {(string|string[])} params.levels — redefinition levels
+ * @param {string} params.ext ext - extension of the preprocessing CSS file
  *
  */
 exports.getFileNames = function(params) {
     var htmlSrc = fs.readFileSync(params.htmlSrc, 'utf8'),
         blocks = getClasses(htmlSrc);
 
-    return getFilesFromBlocks(blocks, params.levels).then(function(files) {
+    return getFilesFromBlocks(blocks, params.levels, params.ext).then(function(files) {
         return files;
     });
 };
