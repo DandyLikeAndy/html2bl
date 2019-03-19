@@ -62,15 +62,24 @@ function getFilesFromBlocks(blocks, levels, extCssFiles) {
  * Returns promise with block directories from html file.
  * Looking on current file tree with redifinition levels.
  * @param {Object} params
- * @param {string} params.htmlSrc html file name for parsing
+ * @param {(string|string[])} params.htmlSrc html files name for parsing
  * @param {(string|string[])} params.levels — redefinition levels
  * @param {string} params.extCssFiles extension of the preprocessing CSS file
  *
  */
 exports.getFileNames = function(params) {
-    var htmlSrc = fs.readFileSync(params.htmlSrc, 'utf8'),
-        blocks = getClasses(htmlSrc);
+    var htmlSrc = '',
+        blocks = null;
 
+    if (typeof params.htmlSrc === 'string' ) {
+        htmlSrc = fs.readFileSync(params.htmlSrc, 'utf8');
+    } else if (params.htmlSrc instanceof Array) {
+        params.htmlSrc.forEach(function(html) {
+            htmlSrc += '\n' + fs.readFileSync(html, 'utf8');
+        });
+    }
+    blocks = getClasses(htmlSrc);
+   
     return getFilesFromBlocks(blocks, params.levels, params.extCssFiles).then(function(files) {
         return files;
     });
